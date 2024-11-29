@@ -281,22 +281,4 @@
         }
 
         // Função para adicionar um defeito ao container
-        function addDefect() {
-            var defectContainer = document.getElementById("defect-container");
-            var defectDiv = document.createElement("div");
-            defectDiv.classList.add("defect-row");
-            defectDiv.innerHTML = `
-                <input type="text" name="defect" placeholder="Defeito/Problema">
-                <input type="file" name="defect-photo">
-                <button type="button" onclick="removeDefect(this)">Remover</button>`;
-            defectContainer.appendChild(defectDiv);
-        }
-
-        // Função para remover um defeito
-        function removeDefect(button) {
-            var defectDiv = button.parentNode;
-            defectDiv.remove();
-        }
-    </script>
-</body>
-</html>
+        function

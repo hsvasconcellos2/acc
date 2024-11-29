@@ -1,4 +1,3 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -49,10 +48,10 @@
             margin-top: 20px;
         }
         table td {
-            height: 50px; /* Cria espaço para o conteúdo */
+            height: 50px;
         }
         .index-column {
-            width: 10%; /* Ajuste a largura conforme necessário */
+            width: 10%;
         }
         .checkbox-group input[type="checkbox"] {
             margin-right: 8px;
@@ -73,17 +72,9 @@
         .send-button button:hover {
             background-color: #004080;
         }
-
-        /* Alinhamento das tabelas de fotos */
         .photo-table th, .photo-table td {
-            width: 50%; /* A largura das colunas de fotos agora será igualmente distribuída */
+            width: 50%;
         }
-
-        .defect-set {
-            margin-bottom: 20px;
-        }
-
-        /* Estilo para a imagem de pré-visualização */
         .preview {
             max-width: 100%;
             max-height: 200px;
@@ -109,7 +100,6 @@
                 <input type="text" placeholder="Standort Nr">
             </h2>
 
-            <!-- Adicionando as caixas de seleção para Typ e Projekt abaixo de Standort Nr -->
             <div class="section">
                 <p><strong>Typ:</strong> 
                     <select>
@@ -126,6 +116,7 @@
                 </p>
             </div>
         </div>
+        
         <div class="section">
             <h2>Standortdetails</h2>
             <table>
@@ -143,6 +134,7 @@
                 </tr>
             </table>
         </div>
+
         <div class="section">
             <h2>Prüfung OnSite</h2>
             <div class="checkbox-group">
@@ -153,6 +145,7 @@
             </div>
             <p><em>(*bei Onsite Abnahmen muss das zugehörige Protokoll zur Verfügung gestellt werden)</em></p>
         </div>
+        
         <div class="section">
             <h2>Prüfungs- Abnahme Ergebnis</h2>
             <div class="checkbox-group">
@@ -172,20 +165,14 @@
                 <label for="critical-maengeln" class="highlight">Standort mit Critical Mängel -> ABNAHME-VERWEIGERUNG</label>
             </div>
         </div>
-        
+
         <div class="section">
             <h2>Mängel - Übersicht und Fotos</h2>
-
-            <!-- Conjunto de defeitos e fotos -->
             <div id="defect-container">
-                <!-- As tabelas de defeitos serão adicionadas aqui -->
             </div>
-
-            <!-- Botão para adicionar mais defeitos e fotos -->
             <button type="button" onclick="addDefect()">+</button>
         </div>
 
-        <!-- Nova tabela adicionada antes da seção Unterschriften -->
         <div class="section">
             <h2>Doku Mängel_Details</h2>
             <table id="mangel-table">
@@ -214,8 +201,6 @@
         <div class="signature">
             <h2>Unterschriften</h2>
             <p><strong>Abnahmegewerk:</strong> Vor- Nachname</p>
-            
-            <!-- Novo campo de seleção para o GU -->
             <label for="gu">GU Auswahl:</label>
             <select id="gu" name="gu">
                 <option value="Gimbel">Gimbel</option>
@@ -226,18 +211,16 @@
         </div>
 
         <div class="send-button">
-            <a href="mailto:hugo.vasconcellos@americantower.com?subject=Prüfprotokoll&body=Hier%20ist%20das%20Protokoll%20für%20die%20Überprüfung." target="_blank">
-                <button type="button">Protokoll absenden</button>
-            </a>
+            <button type="button" onclick="generatePDF()">Gerar PDF e Enviar E-mail</button>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         // Função para adicionar uma nova linha à tabela de documentos
         function addRow() {
             var table = document.getElementById("mangel-table").getElementsByTagName('tbody')[0];
             var newRow = table.insertRow(table.rows.length);
-
             newRow.innerHTML = 
                 `<td><input type="text" placeholder="Index"></td>
                  <td><input type="text" placeholder="Dokumenten Name / Kategorie"></td>
@@ -246,83 +229,72 @@
                  <td><button type="button" onclick="removeRow(this)">-</button></td>`;
         }
 
-        // Função para remover uma linha
+        // Função para remover uma linha da tabela
         function removeRow(button) {
             var row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
         }
 
-        // Função para adicionar um conjunto de defeitos e fotos
+        // Função para gerar PDF com o conteúdo do formulário
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.text("ATC-Prüf u. GU-Mangelabmelde Protokoll", 20, 20);
+
+            // Adiciona o conteúdo do formulário no PDF
+            doc.setFontSize(12);
+            doc.text("Protokoll Nr: " + document.querySelector('select').value, 20, 30);
+            doc.text("Standort Nr: " + document.querySelector('input[type="text"]').value, 20, 40);
+            doc.text("Typ: " + document.querySelectorAll('select')[1].value, 20, 50);
+            doc.text("Projekt: " + document.querySelectorAll('select')[2].value, 20, 60);
+            
+            doc.text("Standortdetails:", 20, 80);
+            doc.autoTable({
+                startY: 90,
+                head: [['ATC Standort-Nr', 'Kunden Standort-Nr', 'Standortadresse']],
+                body: [
+                    ['123456', 'xxx99xxxx', 'Straße, PLZ Ort']
+                ]
+            });
+
+            // Adiciona uma seção de falhas, se necessário
+            let defectContainer = document.getElementById("defect-container");
+            let defects = defectContainer.getElementsByClassName("defect-row");
+            if (defects.length > 0) {
+                doc.text("Mängel - Übersicht und Fotos:", 20, 150);
+                defects.forEach((defect, index) => {
+                    doc.text("Defeito " + (index + 1) + ": " + defect.querySelector("input[name='defect']").value, 20, 160 + (index * 10));
+                });
+            }
+
+            // Salva o PDF
+            doc.save("protokoll.pdf");
+
+            // Abre o Outlook para enviar um e-mail (sem anexar o PDF)
+            const email = "recipient@example.com";  // Insira o destinatário do e-mail
+            const subject = "Protokoll Mangelabmeldung";
+            const body = "Por favor, veja o PDF anexado com o Protokoll.";
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        }
+
+        // Função para adicionar um defeito ao container
         function addDefect() {
-            var container = document.getElementById('defect-container');
-
-            // Cria o novo conjunto (tabela de defeito + tabela de fotos)
-            var defectSet = document.createElement('div');
-            defectSet.classList.add('defect-set');
-
-            // Defeito - tabela
-            var defectTable = 
-                `<table class="defect-table">
-                    <tr>
-                        <th class="index-column">Index</th>
-                        <th>Mängel - Kategorie/Kurzbeschreibung</th>
-                        <th>X – Mangel<br>M – Major</th>
-                    </tr>
-                    <tr>
-                        <td><input type="text" placeholder="X.XX"></td>
-                        <td><input type="text" placeholder="Mängel-Kategorie"></td>
-                        <td>
-                            <select>
-                                <option value="X">X – Mangel</option>
-                                <option value="M">M – Major</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>`;
-
-            // Fotos - tabela
-            var photoTable = 
-                `<table class="photo-table">
-                    <tr>
-                        <th>Fotos (aktueller Mangel)</th>
-                        <th>Fotos (nach Mangelkorrektur)</th>
-                    </tr>
-                    <tr>
-                        <td style="height: 200px;">
-                            <input type="file" accept="image/*" onchange="previewImage(event, this)">
-                            <img class="preview" src="" alt="Preview">
-                        </td>
-                        <td style="height: 200px;">
-                            <input type="file" accept="image/*" onchange="previewImage(event, this)">
-                            <img class="preview" src="" alt="Preview">
-                        </td>
-                    </tr>
-                </table>`;
-
-            // Botão de remoção
-            var removeButton = `<button type="button" onclick="removeDefect(this)">-</button>`;
-
-            // Adiciona a tabela de defeito, fotos e o botão de remoção ao conjunto
-            defectSet.innerHTML = defectTable + photoTable + removeButton;
-
-            // Adiciona o novo conjunto ao container
-            container.appendChild(defectSet);
+            var defectContainer = document.getElementById("defect-container");
+            var defectDiv = document.createElement("div");
+            defectDiv.classList.add("defect-row");
+            defectDiv.innerHTML = `
+                <input type="text" name="defect" placeholder="Defeito/Problema">
+                <input type="file" name="defect-photo">
+                <button type="button" onclick="removeDefect(this)">Remover</button>`;
+            defectContainer.appendChild(defectDiv);
         }
 
-        // Função para remover o conjunto de defeito e fotos
+        // Função para remover um defeito
         function removeDefect(button) {
-            var defectSet = button.parentElement;
-            defectSet.remove();
-        }
-
-        // Função para exibir a imagem de pré-visualização
-        function previewImage(event, input) {
-            var reader = new FileReader();
-            reader.onload = function () {
-                var img = input.nextElementSibling; // Imagem que estará no HTML após o input
-                img.src = reader.result; // Define a imagem de pré-visualização
-            };
-            reader.readAsDataURL(event.target.files[0]);
+            var defectDiv = button.parentNode;
+            defectDiv.remove();
         }
     </script>
 </body>

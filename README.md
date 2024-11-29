@@ -68,6 +68,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            display: inline-block; /* Garantir que o botão seja exibido como um bloco */
         }
         .send-button button:hover {
             background-color: #004080;
@@ -212,7 +213,7 @@
 
         <div class="send-button">
             <!-- Ajustando o botão para ser visível e interativo -->
-            <button type="button" onclick="generatePDF()">Gerar PDF e Enviar E-mail</button>
+            <button type="button" style="visibility: visible;" onclick="generatePDF()">Gerar PDF e Enviar E-mail</button>
         </div>
     </div>
 
@@ -281,4 +282,22 @@
         }
 
         // Função para adicionar um defeito ao container
-        function
+        function addDefect() {
+            var defectContainer = document.getElementById("defect-container");
+            var defectDiv = document.createElement("div");
+            defectDiv.classList.add("defect-row");
+            defectDiv.innerHTML = `
+                <input type="text" name="defect" placeholder="Defeito/Problema">
+                <input type="file" name="defect-photo">
+                <button type="button" onclick="removeDefect(this)">Remover</button>`;
+            defectContainer.appendChild(defectDiv);
+        }
+
+        // Função para remover um defeito
+        function removeDefect(button) {
+            var defectDiv = button.parentNode;
+            defectDiv.remove();
+        }
+    </script>
+</body>
+</html>

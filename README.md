@@ -211,6 +211,7 @@
         </div>
 
         <div class="send-button">
+            <!-- Ajustando o botão para ser visível e interativo -->
             <button type="button" onclick="generatePDF()">Gerar PDF e Enviar E-mail</button>
         </div>
     </div>
